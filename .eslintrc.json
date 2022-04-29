@@ -1,0 +1,35 @@
+{
+  "root": true,
+  "parser": "@typescript-eslint/parser",
+  "env": {
+    "commonjs": true,
+    "es6": true,
+    "node": true,
+    "jest": true
+  },
+  "extends": ["plugin:@typescript-eslint/recommended", "prettier"],
+  "plugins": ["prettier", "@typescript-eslint"],
+  "globals": {
+    "Atomics": "readonly",
+    "SharedArrayBuffer": "readonly",
+    "jest": "readonly",
+    "test": "readonly",
+    "expect": "readonly",
+    "beforeEach": "readonly"
+  },
+  "parserOptions": {
+    "ecmaVersion": 2018,
+    "sourceType": "module"
+  },
+  "settings": {
+    "import/resolver": {
+      "node": {
+        "extensions": [".js", ".jsx", ".ts", ".tsx"]
+      }
+    }
+  },
+  "rules": {
+    "prettier/prettier": ["error"]
+  },
+  "ignorePatterns": ["node_modules", "dist", "coverage", ".build"]
+}

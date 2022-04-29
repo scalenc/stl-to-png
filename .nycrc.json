@@ -1,0 +1,6 @@
+{
+  "all": true,
+  "report-dir": "./coverage",
+  "extension": [".ts"],
+  "exclude": [".build", "coverage", "tests"]
+}

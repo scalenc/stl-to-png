@@ -1,0 +1,5 @@
+#!/bin/sh
+echo "Performing pre-commit hook: prettier"
+npx --no-install pretty-quick --staged
+echo "Performing pre-commit hook: lint-staged"
+npx --no-install lint-staged

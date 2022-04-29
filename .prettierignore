@@ -1,0 +1,5 @@
+coverage
+data
+node_modules
+dist
+.build

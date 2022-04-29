@@ -1,14 +1,20 @@
 {
-  "name": "node-stl-to-thumbnail",
-  "version": "1.1.0",
-  "description": "Create thumbnail from 3D STL file. Creates beautifully rendered png and jpeg output server-side with no GPU from ASCII and Binary STL's.",
-  "main": "index.js",
+  "name": "@scalenc/stl-to-png",
+  "version": "0.0.0-development",
+  "description": "Creates PNG thumbnails from 3D STL file with nodejs",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "prepare": "husky install",
+    "lint": "eslint .",
+    "build": "tsc -p tsconfig.release.json",
+    "prepack": "yarn build",
+    "test": "mocha",
+    "coverage": "nyc --reporter lcov --reporter text yarn test"
   },
   "repository": {
     "type": "git",
-    "url": "git+ssh://git@github.com:fakhrullah/node-stl-to-thumbnail.git"
+    "url": "https://github.com/scalenc/stl-to-png.git"
   },
   "keywords": [
     "stl",
@@ -27,19 +33,63 @@
     "gpu",
     "cpu"
   ],
-  "author": "FakhrullahPadzil",
+  "author": "scalenc",
   "license": "MIT",
+  "files": [
+    "./dist/"
+  ],
   "bugs": {
-    "url": "https://github.com/fakhrullah/node-stl-to-thumbnail/issues"
+    "url": "https://github.com/scalenc/stl-to-png/issues"
   },
-  "homepage": "https://github.com/fakhrullah/node-stl-to-thumbnail",
+  "homepage": "https://github.com/scalenc/stl-to-png",
   "dependencies": {
-    "canvas": "^2.5.0",
-    "lodash": "^4.17.13",
-    "request": "^2.88.0",
-    "three": "^0.90.0"
+    "canvas": "^2.9.1",
+    "lodash": "^4.17.21",
+    "request": "^2.88.2",
+    "three": "^0.139.2"
   },
   "devDependencies": {
-    "eslint": "^6.0.1"
+    "@types/chai": "^4.3.1",
+    "@types/mocha": "^9.1.1",
+    "@types/node": "17.0.30",
+    "@types/three": "^0.139.0",
+    "@typescript-eslint/eslint-plugin": "^5.21.0",
+    "@typescript-eslint/parser": "^5.21.0",
+    "chai": "^4.3.6",
+    "commitlint": "^16.2.4",
+    "eslint": "^8.14.0",
+    "eslint-config-prettier": "^8.5.0",
+    "eslint-plugin-prettier": "^4.0.0",
+    "husky": "^7.0.4",
+    "lint-staged": "^12.4.1",
+    "mocha": "^9.2.2",
+    "nyc": "^15.1.0",
+    "prettier": "^2.6.2",
+    "pretty-quick": "^3.1.3",
+    "ts-node": "^10.7.0",
+    "typescript": "^4.6.4"
+  },
+  "mocha": {
+    "diff": true,
+    "extension": [
+      "ts"
+    ],
+    "spec": "tests/**/*.test.ts",
+    "require": [
+      "ts-node/register"
+    ],
+    "watch-files": [
+      "src/**/*.ts",
+      "tests/**/*.ts"
+    ],
+    "watch-ignore": []
+  },
+  "lint-staged": {
+    "*.{js,jsx,ts,tsx}": [
+      "./node_modules/.bin/eslint"
+    ],
+    "*.{js,jsx,ts,tsx,json,md}": [
+      "./node_modules/.bin/prettier --list-different"
+    ]
   }
 }

@@ -1,0 +1,52 @@
+default:
+  image: node:14
+
+stages:
+  - test
+  - tag
+  - deploy
+
+run-tests:
+  stage: test
+  except:
+    - tags
+  script:
+    - yarn
+    - yarn lint
+    - yarn build
+    - yarn coverage
+
+tag:
+  stage: tag
+  only:
+    - master
+  script:
+    - npx semantic-release --repository-url `git remote get-url origin`
+
+deploy-to-npm:
+  stage: deploy
+  only:
+    - tags
+  before_script:
+    - echo "//registry.npmjs.org/:_authToken=${NPM_TOKEN}" > .npmrc
+  script:
+    - 'sed -ie "s/\"version\":[ ]*\"[^\"]*\"/\"version\": \"`git describe --tags | tr -d v`\"/g" package.json'
+    - 'sed -i "/^[ ]*\"prepare\": \".*\",$/d" package.json'
+    - yarn
+    - yarn publish --access public
+
+deploy-to-gitlab:
+  stage: deploy
+  only:
+    - tags
+  before_script:
+    - |
+      {
+        echo "@${CI_PROJECT_ROOT_NAMESPACE}:registry=${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/npm/"
+        echo "${CI_API_V4_URL#https?}/projects/${CI_PROJECT_ID}/packages/npm/:_authToken=\${CI_JOB_TOKEN}"
+      } | tee --append .npmrc
+  script:
+    - 'sed -ie "s/\"version\":[ ]*\"[^\"]*\"/\"version\": \"`git describe --tags | tr -d v`\"/g" package.json'
+    - 'sed -i "/^[ ]*\"prepare\": \".*\",$/d" package.json'
+    - yarn
+    - yarn publish
