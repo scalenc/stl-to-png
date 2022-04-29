@@ -59,7 +59,7 @@ describe(stl2png.name, function () {
         const stlData = await fs.promises.readFile(path.join(__dirname, 'data', filename));
         const metal = await fs.promises.readFile(path.join(__dirname, 'data', 'textures', 'metal.jpg'));
         const png = await stl2png(stlData, {
-          materials: [makeLambertMaterial(0.2, makeTexture(metal, false)), makeBasicMaterial(0.7, 0x3097d1), makeNormalMaterial(0.4)],
+          materials: [makeLambertMaterial(0.2, makeTexture(metal, false)), makeNormalMaterial(0.4)],
           edgeMaterials: [makeEdgeMaterial(0.1, 0x287dad)],
         });
         await fs.promises.writeFile(path.join(__dirname, 'data', 'dump', `withNormals_${filename}.png`), png);
