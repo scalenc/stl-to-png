@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-empty-function */
 /**
  * @author mrdoob / http://mrdoob.com/
  * Adapted from https://github.com/mrdoob/three.js/blob/07b24f7f03e73174278152f062d98068124d6ff2/examples/js/renderers/CanvasRenderer.js
@@ -38,6 +39,7 @@ export function CanvasRenderer(parameters) {
   // ScaleNC: added line to get rid of globals
   var createCanvas = parameters.createCanvas !== undefined ? parameters.createCanvas : document.createElement('canvas');
 
+  // eslint-disable-next-line @typescript-eslint/no-this-alias
   var _this = this,
     _renderData,
     _elements,
