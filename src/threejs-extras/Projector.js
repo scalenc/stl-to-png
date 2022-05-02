@@ -1,4 +1,5 @@
 // From https://github.com/mrdoob/three.js/blob/1637e9db57fda89b39d4959dc7791124d945e447/examples/jsm/renderers/Projector.js
+import { debug } from 'console';
 import { Box3, Color, DoubleSide, Frustum, Matrix3, Matrix4, Vector2, Vector3, Vector4 } from 'three';
 
 class RenderableObject {
@@ -12,10 +13,14 @@ class RenderableObject {
 }
 
 //
+let counter = 0;
 
 class RenderableFace {
   constructor() {
     this.id = 0;
+    this.debugId = counter++;
+
+    this.isFace = true;
 
     this.v1 = new RenderableVertex();
     this.v2 = new RenderableVertex();
@@ -31,6 +36,14 @@ class RenderableFace {
     this.uvs = [new Vector2(), new Vector2(), new Vector2()];
 
     this.z = 0;
+
+    this.minX = 0;
+    this.maxX = 0;
+    this.minY = 0;
+    this.maxY = 0;
+    this.minZ = 0;
+    this.maxZ = 0;
+
     this.renderOrder = 0;
   }
 }
@@ -265,6 +278,14 @@ class Projector {
           _face.v2.copy(v2);
           _face.v3.copy(v3);
           _face.z = (v1.positionScreen.z + v2.positionScreen.z + v3.positionScreen.z) / 3;
+
+          _face.minX = Math.min(Math.min(v1.positionScreen.x, v2.positionScreen.x), v3.positionScreen.x);
+          _face.maxX = Math.max(Math.max(v1.positionScreen.x, v2.positionScreen.x), v3.positionScreen.x);
+          _face.minY = Math.min(Math.min(v1.positionScreen.y, v2.positionScreen.y), v3.positionScreen.y);
+          _face.maxY = Math.max(Math.max(v1.positionScreen.y, v2.positionScreen.y), v3.positionScreen.y);
+          _face.minZ = Math.min(Math.min(v1.positionScreen.z, v2.positionScreen.z), v3.positionScreen.z);
+          _face.maxZ = Math.max(Math.max(v1.positionScreen.z, v2.positionScreen.z), v3.positionScreen.z);
+
           _face.renderOrder = object.renderOrder;
 
           // face normal
@@ -572,7 +593,15 @@ class Projector {
       }
 
       if (sortElements === true) {
-        _renderData.elements.sort(painterSort);
+        console.log(
+          `sorting ${_renderData.elements.length} elements`,
+          _renderData.elements.map((o) => o.debugId)
+        );
+        _renderData.elements.sort(newellSort);
+        console.log(
+          `sorted ${_renderData.elements.length} elements`,
+          _renderData.elements.map((o) => o.debugId)
+        );
       }
 
       return _renderData;
@@ -670,6 +699,7 @@ class Projector {
     //
 
     function painterSort(a, b) {
+      console.log('painter');
       if (a.renderOrder !== b.renderOrder) {
         return a.renderOrder - b.renderOrder;
       } else if (a.z !== b.z) {
@@ -681,6 +711,89 @@ class Projector {
       }
     }
 
+    function newellSort(a, b) {
+      if (!a.isFace || !b.isFace) {
+        return painterSort(a, b);
+      }
+
+      let debug = false;
+
+      if (debug) {
+        console.log('======================================');
+        console.log('NEWELL: Comparing', a.debugId, 'with', b.debugId);
+        console.log('render orders', a.renderOrder, b.renderOrder);
+        console.log('z-ranges', `${a.minZ} - ${a.maxZ}`, 'and', `${b.minZ} - ${b.maxZ}`, b.minZ > a.maxZ && b.maxZ < a.minZ ? 'no overlap' : 'overlap');
+        console.log('x-ranges', `${a.minX} - ${a.maxX}`, 'and', `${b.minX} - ${b.maxX}`, b.minX > a.maxX && b.maxX < a.minX ? 'no overlap' : 'overlap');
+        console.log('y-ranges', `${a.minY} - ${a.maxY}`, 'and', `${b.minY} - ${b.maxY}`, b.minY > a.maxY && b.maxY < a.minY ? 'no overlap' : 'overlap');
+        console.log(
+          'distances to plain A',
+          distancePlainToPoint(a.v1.positionWorld, a.normalModel, b.v1.positionWorld),
+          distancePlainToPoint(a.v1.positionWorld, a.normalModel, b.v2.positionWorld),
+          distancePlainToPoint(a.v1.positionWorld, a.normalModel, b.v3.positionWorld)
+        );
+        console.log(
+          'distances to plain B',
+          distancePlainToPoint(b.v1.positionWorld, b.normalModel, a.v1.positionWorld),
+          distancePlainToPoint(b.v1.positionWorld, b.normalModel, a.v2.positionWorld),
+          distancePlainToPoint(b.v1.positionWorld, b.normalModel, a.v3.positionWorld)
+        );
+      }
+
+      debug = true;
+
+      if (a.renderOrder !== b.renderOrder) {
+        if (debug) console.log('renderOrders are different');
+        return a.renderOrder - b.renderOrder;
+      }
+      if (a.maxZ <= b.minZ) {
+        if (debug) console.log('a fully behind b');
+        return 1;
+      }
+      if (a.minZ >= b.maxZ) {
+        if (debug) console.log('b fully behind a');
+        return -1;
+      }
+      if (b.minX > a.maxX || b.maxX < a.minX || b.minY > a.maxY || b.maxY < a.minY) {
+        if (debug) console.log('no bounding box intersection');
+        return -1;
+      }
+      const da1 = distancePlainToPoint(a.v1.positionWorld, a.normalModel, b.v1.positionWorld);
+      const da2 = distancePlainToPoint(a.v1.positionWorld, a.normalModel, b.v2.positionWorld);
+      const da3 = distancePlainToPoint(a.v1.positionWorld, a.normalModel, b.v3.positionWorld);
+      if (da1 >= 0 && da2 >= 0 && da3 >= 0 && !(((da1 === da2) === da3) === 0)) {
+        if (debug) console.log('all vertices of b behind plain A');
+        return -1;
+      }
+      if (da1 <= 0 && da2 <= 0 && da3 <= 0 && !(((da1 === da2) === da3) === 0)) {
+        if (debug) console.log('all vertices of b in front of plain A');
+        return 1;
+      }
+      const db1 = distancePlainToPoint(a.v1.positionWorld, a.normalModel, b.v1.positionWorld);
+      const db2 = distancePlainToPoint(a.v1.positionWorld, a.normalModel, b.v2.positionWorld);
+      const db3 = distancePlainToPoint(a.v1.positionWorld, a.normalModel, b.v3.positionWorld);
+      if (db1 >= 0 && db2 >= 0 && db3 >= 0 && !(((db1 === db2) === db3) === 0)) {
+        if (debug) console.log('all vertices of a behind plain B');
+        return 1;
+      }
+      if (db1 <= 0 && db2 <= 0 && db3 <= 0 && !(((db1 === db2) === db3) === 0)) {
+        if (debug) console.log('all vertices of a in front of plain B');
+        return -1;
+      }
+
+      if (a.id !== b.id) {
+        if (debug) console.log('Falling back to Id comparison');
+        return a.id - b.id;
+      }
+
+      if (debug) console.log('No criteria found');
+      console.log('render orders', a.renderOrder, b.renderOrder);
+      console.log('z-ranges', `${a.minZ} - ${a.maxZ}`, 'and', `${b.minZ} - ${b.maxZ}`, b.minZ > a.maxZ && b.maxZ < a.minZ ? 'no overlap' : 'overlap');
+      console.log('x-ranges', `${a.minX} - ${a.maxX}`, 'and', `${b.minX} - ${b.maxX}`, b.minX > a.maxX && b.maxX < a.minX ? 'no overlap' : 'overlap');
+      console.log('y-ranges', `${a.minY} - ${a.maxY}`, 'and', `${b.minY} - ${b.maxY}`, b.minY > a.maxY && b.maxY < a.minY ? 'no overlap' : 'overlap');
+      console.log('distances to plain A', da1, da2, da3);
+      console.log('distances to plain B', db1, db2, db3);
+      return 0;
+    }
     function clipLine(s1, s2) {
       let alpha1 = 0,
         alpha2 = 1;
@@ -731,6 +844,13 @@ class Projector {
           return true;
         }
       }
+    }
+    function distancePlainToPoint(pointOnPlane, plainNormal, point) {
+      // (pointOnPlane: Vector3, plainNormal: Vector3, point: Vector3)
+      const vx = pointOnPlane.x - point.x;
+      const vy = pointOnPlane.y - point.y;
+      const vz = pointOnPlane.z - point.z;
+      return vx * plainNormal.x + vy * plainNormal.y + vz * plainNormal.z;
     }
   }
 }

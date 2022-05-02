@@ -11,7 +11,7 @@ const DEFAULTS = {
   backgroundAlpha: 0,
   cameraPosition: [0, -25, 20],
   materials: [makeStandardMaterial(1, 0xb8cad8)],
-  edgeMaterials: [],
+  edgeMaterials: [], // [makeEdgeMaterial(1, 0x287dad)],
   lights: [makeDirectionalLight(0, -25, 100, 0xffffff, 1.5), makeAmbientLight(0x666666)],
 };
 
