@@ -106,7 +106,7 @@ export function makeCanvasMaterial<T extends THREE.Material>(material: T, overDr
   return material;
 }
 
-export function makeStandardMaterial(opacity: number, color: number): THREE.MeshStandardMaterial & { overDraw?: number } {
+export function makeStandardMaterial(opacity: number, color: THREE.ColorRepresentation): THREE.MeshStandardMaterial & { overDraw?: number } {
   return makeCanvasMaterial(
     new THREE.MeshStandardMaterial({
       side: THREE.DoubleSide,
@@ -129,7 +129,7 @@ export function makeNormalMaterial(opacity: number): THREE.MeshNormalMaterial & 
   );
 }
 
-export function makeEdgeMaterial(weight: number, color: number): THREE.LineBasicMaterial {
+export function makeEdgeMaterial(weight: number, color: THREE.ColorRepresentation): THREE.LineBasicMaterial {
   return new THREE.LineBasicMaterial({
     color: color,
     linewidth: weight,
@@ -138,11 +138,11 @@ export function makeEdgeMaterial(weight: number, color: number): THREE.LineBasic
   });
 }
 
-export function makeAmbientLight(color: number, intensity?: number): THREE.AmbientLight {
+export function makeAmbientLight(color: THREE.ColorRepresentation, intensity?: number): THREE.AmbientLight {
   return new THREE.AmbientLight(color, intensity);
 }
 
-export function makeDirectionalLight(x: number, y: number, z: number, color?: number, intensity?: number): THREE.DirectionalLight {
+export function makeDirectionalLight(x: number, y: number, z: number, color?: THREE.ColorRepresentation, intensity?: number): THREE.DirectionalLight {
   const directionalLight = new THREE.DirectionalLight(color, intensity);
   directionalLight.position.set(x, y, z);
 

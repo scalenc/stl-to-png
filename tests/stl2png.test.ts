@@ -64,8 +64,8 @@ describe(stl2png.name, function () {
         const stlData = await fs.promises.readFile(path.join(__dirname, 'data', filename));
         const png = stl2png(stlData, {
           lights: [makeAmbientLight(0xffffff), makeDirectionalLight(1, 1, 1, 0xffffff, 1.35), makeDirectionalLight(0.5, 1, -1, 0xffffff, 1)],
-          materials: [],
-          edgeMaterials: [makeEdgeMaterial(0.7, 0x000000)],
+          materials: [makeStandardMaterial(0.5, 0xffffff)],
+          edgeMaterials: [makeEdgeMaterial(3, 0x014776)],
         });
         await fs.promises.writeFile(path.join(__dirname, 'data', 'dump', `${this.title}_${filename}.png`), png);
         await compareImages(`${this.title}_${filename}`);
