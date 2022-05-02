@@ -1,47 +1,67 @@
-# node-stl-to-thumbnail
+# stl-to-png
 
-Create thumbnail from 3D STL file. Creates beautifully rendered png and jpeg output server-side with no GPU from ASCII and Binary STL's.
+Create PNG images from 3D STL files.
+Creates beautifully rendered PNG output server-side with no GPU from ASCII and Binary STL's.
 
-> This code is forked from [`node-stl-to-thumbnail`](https://www.npmjs.com/package/node-stl-to-thumbnail) by instructables but I cannot found it in Github anymore.
+> This code is forked from [`node-stl-to-thumbnail`](https://www.npmjs.com/package/node-stl-to-thumbnail) which is a fork from [`node-stl-thumbnailer`](https://www.npmjs.com/package/node-stl-thumbnailer) by instructables. This fork adds typescript support and unit tests.
 
 ## Installation
-```npm install --save node-stl-to-thumbnail```
+
+To install the this package, simply use your favorite package manager:
+
+```sh
+npm install stl-to-png
+yarn add stl-to-png
+pnpm add stl-to-png
+```
 
 ## Usage
 
-The following snippet loads a file from the current directory (```./input.stl```), and creates a 500x500 png thumbnail in the current directory called ```./output.png```.
+The following snippet loads a file from the current directory (`./input.stl`), and creates a 500x500 PNG image in the current directory called `./output.png`.
 
-```javascript
-var StlThumbnailer = require('node-stl-to-thumbnail');
-var fs = require('fs');
+```typescript
+import { stl2png } from 'stl-to-png';
+import fs from 'fs';
+import path from 'path';
 
-var thumbnailer = new StlThumbnailer({
-	filePath: __dirname + "/input.stl",
-	requestThumbnails: [
-		{
-			width: 500,
-			height: 500
-		}
-	] 	
-})
-.then(function(thumbnails){
-	// thumbnails is an array (in matching order to your requests) of Canvas objects
-	// you can write them to disk, return them to web users, etc
-	// see node-canvas documentation at https://github.com/Automattic/node-canvas
-	thumbnails[0].toBuffer(function(err, buf){      
-		fs.writeFileSync(__dirname + "/output.png", buf);
-    })
-})
+const stlData = fs.readFileSync(path.join(__dirname, 'input.stl'));
+const pngData = stl2png(stlData, { width: 500, height: 500 });
+fs.writeFileSync(path.join(__dirname, 'output.png'), pngData);
 ```
 
-## Help needed
+The following snippet adds some more styling to the previous example assuming a texture image `metal.jpg` in the current directory.
 
-To be honest, I am not fully understand this. Need help on:
+```typescript
+import { makeBasicMaterial, makeEdgeMaterial, makeLambertMaterial, makeTexture, stl2png } from 'stl-to-png';
+import fs from 'fs';
+import path from 'path';
 
-1. Camera setting, so that can get view from any perspective I want
-2. Render setting so that it look beautiful. If you see Three.js website the 3D item are so beautiful
-3. Update to use latest JavaScript ( ES2015++ )
+const stlData = fs.readFileSync(path.join(__dirname, 'input.stl'));
+const metal = fs.readFileSync(path.join(__dirname, 'metal.jpg'));
+const pngData = stl2png(stlData, {
+  materials: [makeLambertMaterial(0.2, makeTexture(metal, false)), makeBasicMaterial(0.7, 0x3097d1)],
+  edgeMaterials: [makeEdgeMaterial(0.1, 0x287dad)],
+});
+fs.writeFileSync(path.join(__dirname, `output.png`), pngData);
+```
 
-## Thanks / Credit
+## Development
 
-Thanks for Digital Data Sdn Bhd (currently working company) for supporting me and open source.
+```shell
+# build the code
+yarn build
+
+# unit tests
+yarn test
+```
+
+### CI
+
+All branches are built and tested using Gitlab CI.
+Changes on the master branch will be deployed to npm.js
+
+## License
+
+---
+
+MIT
