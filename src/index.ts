@@ -3,6 +3,7 @@ import Canvas from 'canvas';
 
 import { CanvasRenderer } from './threejs-extras/CanvasRenderer';
 import { STLLoader } from './threejs-extras/STLLoader';
+import { ThreeColorRepresentation, ThreeLight, ThreeMapping, ThreeMaterial, ThreeTexture } from './threejs-extras/three-types';
 
 const DEFAULTS = {
   width: 768,
@@ -21,9 +22,9 @@ export interface Options {
   backgroundColor?: number;
   backgroundAlpha?: number;
   cameraPosition?: [number, number, number];
-  lights?: THREE.Light[];
-  materials?: THREE.Material[];
-  edgeMaterials?: THREE.Material[];
+  lights?: ThreeLight[];
+  materials?: ThreeMaterial[];
+  edgeMaterials?: ThreeMaterial[];
 }
 
 function getGeometry(stlData: Buffer): THREE.BufferGeometry {
@@ -64,10 +65,10 @@ export function stl2png(stlData: Buffer, options: Options = {}): Buffer {
   camera.position.set(newPosition.x, newPosition.y, newPosition.z);
   camera.updateProjectionMatrix();
 
-  (options.lights ?? DEFAULTS.lights).forEach((light) => scene.add(light));
+  (options.lights ?? DEFAULTS.lights).forEach((light) => scene.add(light as THREE.Light));
 
   // Get materials according to requested characteristics of the output render
-  (options.materials ?? DEFAULTS.materials).forEach((m) => scene.add(new THREE.Mesh(geometry, m)));
+  (options.materials ?? DEFAULTS.materials).forEach((m) => scene.add(new THREE.Mesh(geometry, m as THREE.Material)));
   if (!options.edgeMaterials || options.edgeMaterials.length) {
     const edges = new THREE.EdgesGeometry(geometry);
     (options.edgeMaterials ?? DEFAULTS.edgeMaterials).forEach((m) => scene.add(new THREE.LineSegments(edges, m)));
@@ -77,7 +78,7 @@ export function stl2png(stlData: Buffer, options: Options = {}): Buffer {
   return renderer.domElement.toBuffer();
 }
 
-export function makeTexture(imageData: string | Buffer, hasAlpha: boolean, mapping?: THREE.Mapping): THREE.Texture {
+export function makeTexture(imageData: string | Buffer, hasAlpha: boolean, mapping?: ThreeMapping): ThreeTexture {
   const img = new Canvas.Image();
   img.src = imageData;
 
@@ -85,14 +86,33 @@ export function makeTexture(imageData: string | Buffer, hasAlpha: boolean, mappi
   texture.format = hasAlpha ? THREE.RGBFormat : THREE.RGBAFormat;
   texture.image = img;
   texture.needsUpdate = true;
-  if (mapping) texture.mapping = mapping;
+  switch (mapping) {
+    case ThreeMapping.UV:
+      texture.mapping = THREE.UVMapping;
+      break;
+    case ThreeMapping.CubeReflection:
+      texture.mapping = THREE.CubeReflectionMapping;
+      break;
+    case ThreeMapping.CubeRefraction:
+      texture.mapping = THREE.CubeRefractionMapping;
+      break;
+    case ThreeMapping.EquirectangularReflection:
+      texture.mapping = THREE.EquirectangularReflectionMapping;
+      break;
+    case ThreeMapping.EquirectangularRefraction:
+      texture.mapping = THREE.EquirectangularRefractionMapping;
+      break;
+    case ThreeMapping.CubeUVReflection:
+      texture.mapping = THREE.CubeUVReflectionMapping;
+      break;
+  }
   return texture;
 }
 
-export function makeLambertMaterial(opacity: number, envMap: THREE.Texture | null = null): THREE.MeshLambertMaterial {
+export function makeLambertMaterial(opacity: number, envMap: ThreeTexture | null = null): ThreeMaterial {
   return makeCanvasMaterial(
     new THREE.MeshLambertMaterial({
-      envMap: envMap,
+      envMap: envMap as THREE.Texture,
       transparent: true,
       side: THREE.DoubleSide,
       opacity: opacity,
@@ -101,24 +121,24 @@ export function makeLambertMaterial(opacity: number, envMap: THREE.Texture | nul
   );
 }
 
-export function makeCanvasMaterial<T extends THREE.Material>(material: T, overDraw: number): T & { overDraw?: number } {
+export function makeCanvasMaterial<T extends ThreeMaterial>(material: T, overDraw: number): T & { overDraw?: number } {
   (material as T & { overDraw?: number }).overDraw = overDraw;
   return material;
 }
 
-export function makeStandardMaterial(opacity: number, color: THREE.ColorRepresentation): THREE.MeshStandardMaterial & { overDraw?: number } {
+export function makeStandardMaterial(opacity: number, color: ThreeColorRepresentation): ThreeMaterial & { overDraw?: number } {
   return makeCanvasMaterial(
     new THREE.MeshStandardMaterial({
       side: THREE.DoubleSide,
       transparent: true,
       opacity: opacity,
-      color: color,
+      color: color as THREE.ColorRepresentation,
     }),
     0.55
   );
 }
 
-export function makeNormalMaterial(opacity: number): THREE.MeshNormalMaterial & { overDraw?: number } {
+export function makeNormalMaterial(opacity: number): ThreeMaterial & { overDraw?: number } {
   return makeCanvasMaterial(
     new THREE.MeshNormalMaterial({
       side: THREE.DoubleSide,
@@ -129,21 +149,21 @@ export function makeNormalMaterial(opacity: number): THREE.MeshNormalMaterial & 
   );
 }
 
-export function makeEdgeMaterial(weight: number, color: THREE.ColorRepresentation): THREE.LineBasicMaterial {
+export function makeEdgeMaterial(weight: number, color: ThreeColorRepresentation): ThreeMaterial {
   return new THREE.LineBasicMaterial({
-    color: color,
+    color: color as THREE.ColorRepresentation,
     linewidth: weight,
     linecap: 'round',
     linejoin: 'round',
   });
 }
 
-export function makeAmbientLight(color: THREE.ColorRepresentation, intensity?: number): THREE.AmbientLight {
-  return new THREE.AmbientLight(color, intensity);
+export function makeAmbientLight(color: ThreeColorRepresentation, intensity?: number): ThreeLight {
+  return new THREE.AmbientLight(color as THREE.ColorRepresentation, intensity);
 }
 
-export function makeDirectionalLight(x: number, y: number, z: number, color?: THREE.ColorRepresentation, intensity?: number): THREE.DirectionalLight {
-  const directionalLight = new THREE.DirectionalLight(color, intensity);
+export function makeDirectionalLight(x: number, y: number, z: number, color?: ThreeColorRepresentation, intensity?: number): ThreeLight {
+  const directionalLight = new THREE.DirectionalLight(color as THREE.ColorRepresentation, intensity);
   directionalLight.position.set(x, y, z);
 
   directionalLight.castShadow = true;
