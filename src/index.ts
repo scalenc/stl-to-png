@@ -1,26 +1,29 @@
 import * as THREE from 'three';
 import Canvas from 'canvas';
 
-// Assign this to global so that the subsequent modules can extend it:
 import { CanvasRenderer } from './threejs-extras/CanvasRenderer';
 import { STLLoader } from './threejs-extras/STLLoader';
 
 const DEFAULTS = {
-  width: 500,
-  height: 500,
-  cameraAngle: [10, 50, 100], // optional: specify the angle of the view for thumbnailing. This is the camera's position vector, the opposite of the direction the camera is looking.
-  lights: [makeAmbientLight(0xffffff), makeDirectionalLight(1, 1, 1, 0xffffff, 1.35), makeDirectionalLight(0.5, 1, -1, 0xffffff, 1)],
-  materials: [makeBasicMaterial(0.7, 0xffffff)],
-  edgeMaterials: [makeEdgeMaterial(0.7, 0x000000)], // optional: major edges will appear more boldly than minor edges
+  width: 768,
+  height: 512,
+  backgroundColor: 0xffffff,
+  backgroundAlpha: 0,
+  cameraPosition: [0, -25, 20],
+  materials: [makeBasicMaterial(1, 0xb8cad8)],
+  edgeMaterials: [],
+  lights: [makeDirectionalLight(0, -25, 100, 0xffffff, 1.5), makeAmbientLight(0x666666)],
 };
 
 export interface Options {
   width?: number;
   height?: number;
-  cameraAngle?: [number, number, number]; // optional: specify the angle of the view for thumbnailing. This is the camera's position vector, the opposite of the direction the camera is looking.
+  backgroundColor?: number;
+  backgroundAlpha?: number;
+  cameraPosition?: [number, number, number];
   lights?: THREE.Light[];
-  materials?: THREE.Material[]; // optional: material used to render faces
-  edgeMaterials?: THREE.Material[]; // optional: material used to render lines
+  materials?: THREE.Material[];
+  edgeMaterials?: THREE.Material[];
 }
 
 function getGeometry(stlData: Buffer): THREE.BufferGeometry {
@@ -37,21 +40,20 @@ export async function stl2png(stlData: Buffer, options: Options = {}): Promise<B
   // Prepare the scene, renderer, and camera
   const width = options.width ?? DEFAULTS.width;
   const height = options.height ?? DEFAULTS.height;
+  const backgroundColor = options.backgroundColor ?? DEFAULTS.backgroundColor;
+  const backgroundAlpha = options.backgroundAlpha ?? DEFAULTS.backgroundAlpha;
   const camera = new THREE.PerspectiveCamera(30, width / height, 1, 1000);
   const scene = new THREE.Scene();
-  const renderer = new CanvasRenderer({ createCanvas: () => Canvas.createCanvas(width, height) });
-  const geometry = getGeometry(stlData);
-
-  // Configure renderer
+  const renderer = new CanvasRenderer({ createCanvas: () => Canvas.createCanvas(width, height), alpha: !backgroundAlpha });
   renderer.setSize(width, height, false);
-  renderer.setClearColor(0xffffff, 1);
-  THREE.Sprite;
+  renderer.setClearColor(backgroundColor, backgroundAlpha);
+  const geometry = getGeometry(stlData);
 
   // Configure camera with user-set position, then move it in-or-out depending on
   // the size of the model that needs to display
-  camera.position.x = options.cameraAngle?.[0] ?? DEFAULTS.cameraAngle[0];
-  camera.position.y = options.cameraAngle?.[1] ?? DEFAULTS.cameraAngle[1];
-  camera.position.z = options.cameraAngle?.[2] ?? DEFAULTS.cameraAngle[2];
+  camera.position.x = options.cameraPosition?.[0] ?? DEFAULTS.cameraPosition[0];
+  camera.position.y = options.cameraPosition?.[1] ?? DEFAULTS.cameraPosition[1];
+  camera.position.z = options.cameraPosition?.[2] ?? DEFAULTS.cameraPosition[2];
   camera.lookAt(new THREE.Vector3(0, 0, 0));
 
   // (re)Position the camera
@@ -60,8 +62,6 @@ export async function stl2png(stlData: Buffer, options: Options = {}): Promise<B
   const distance = Math.abs(geometry.boundingSphere.radius / Math.sin(fov / 2));
   const newPosition = camera.position.clone().normalize().multiplyScalar(distance);
   camera.position.set(newPosition.x, newPosition.y, newPosition.z);
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  (camera as any).needsUpdate = true; // FIXME really necessary?
   camera.updateProjectionMatrix();
 
   (options.lights ?? DEFAULTS.lights).forEach((light) => scene.add(light));
@@ -89,7 +89,7 @@ export function makeTexture(imageData: string | Buffer, hasAlpha: boolean, mappi
   return texture;
 }
 
-export function makeLambertMaterial(opacity: number, envMap: THREE.Texture): THREE.MeshLambertMaterial {
+export function makeLambertMaterial(opacity: number, envMap: THREE.Texture | null = null): THREE.MeshLambertMaterial {
   return makeCanvasMaterial(
     new THREE.MeshLambertMaterial({
       envMap: envMap,
@@ -97,7 +97,7 @@ export function makeLambertMaterial(opacity: number, envMap: THREE.Texture): THR
       side: THREE.DoubleSide,
       opacity: opacity,
     }),
-    0.5
+    0
   );
 }
 
@@ -106,19 +106,18 @@ export function makeCanvasMaterial<T extends THREE.Material>(material: T, overDr
   return material;
 }
 
-export function makeBasicMaterial(opacity: number, color: number): THREE.MeshBasicMaterial & { overDraw?: number } {
+export function makeBasicMaterial(opacity: number, color: number): THREE.MeshStandardMaterial & { overDraw?: number } {
   return makeCanvasMaterial(
-    new THREE.MeshBasicMaterial({
+    new THREE.MeshStandardMaterial({
       side: THREE.DoubleSide,
       transparent: true,
       opacity: opacity,
       color: color,
     }),
-    0.1
+    0.55
   );
 }
 
-// faces will be shaded lightly by their normal direction
 export function makeNormalMaterial(opacity: number): THREE.MeshNormalMaterial & { overDraw?: number } {
   return makeCanvasMaterial(
     new THREE.MeshNormalMaterial({
