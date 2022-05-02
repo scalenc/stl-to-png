@@ -32,14 +32,14 @@ fs.writeFileSync(path.join(__dirname, 'output.png'), pngData);
 The following snippet adds some more styling to the previous example assuming a texture image `metal.jpg` in the current directory.
 
 ```typescript
-import { makeBasicMaterial, makeEdgeMaterial, makeLambertMaterial, makeTexture, stl2png } from 'stl-to-png';
+import { makeStandardMaterial, makeEdgeMaterial, makeLambertMaterial, makeTexture, stl2png } from 'stl-to-png';
 import fs from 'fs';
 import path from 'path';
 
 const stlData = fs.readFileSync(path.join(__dirname, 'input.stl'));
 const metal = fs.readFileSync(path.join(__dirname, 'metal.jpg'));
 const pngData = stl2png(stlData, {
-  materials: [makeLambertMaterial(0.2, makeTexture(metal, false)), makeBasicMaterial(0.7, 0x3097d1)],
+  materials: [makeLambertMaterial(0.2, makeTexture(metal, false)), makeStandardMaterial(0.7, 0x3097d1)],
   edgeMaterials: [makeEdgeMaterial(0.1, 0x287dad)],
 });
 fs.writeFileSync(path.join(__dirname, `output.png`), pngData);

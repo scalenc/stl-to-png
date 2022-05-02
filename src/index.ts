@@ -10,7 +10,7 @@ const DEFAULTS = {
   backgroundColor: 0xffffff,
   backgroundAlpha: 0,
   cameraPosition: [0, -25, 20],
-  materials: [makeBasicMaterial(1, 0xb8cad8)],
+  materials: [makeStandardMaterial(1, 0xb8cad8)],
   edgeMaterials: [],
   lights: [makeDirectionalLight(0, -25, 100, 0xffffff, 1.5), makeAmbientLight(0x666666)],
 };
@@ -106,7 +106,7 @@ export function makeCanvasMaterial<T extends THREE.Material>(material: T, overDr
   return material;
 }
 
-export function makeBasicMaterial(opacity: number, color: number): THREE.MeshStandardMaterial & { overDraw?: number } {
+export function makeStandardMaterial(opacity: number, color: number): THREE.MeshStandardMaterial & { overDraw?: number } {
   return makeCanvasMaterial(
     new THREE.MeshStandardMaterial({
       side: THREE.DoubleSide,

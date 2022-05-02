@@ -5,7 +5,7 @@ import pixelmatch from 'pixelmatch';
 import { PNG } from 'pngjs';
 import {
   makeAmbientLight,
-  makeBasicMaterial,
+  makeStandardMaterial,
   makeDirectionalLight,
   makeEdgeMaterial,
   makeLambertMaterial,
@@ -34,7 +34,7 @@ describe(stl2png.name, function () {
     describe('noOverDraw', function () {
       it(`for '${filename}'`, async () => {
         const stlData = await fs.promises.readFile(path.join(__dirname, 'data', filename));
-        const material = makeBasicMaterial(0.7, 0x3097d1);
+        const material = makeStandardMaterial(0.7, 0x3097d1);
         material.overDraw = 0;
         const png = stl2png(stlData, { materials: [material], edgeMaterials: [] });
         await fs.promises.writeFile(path.join(__dirname, 'data', 'dump', `${this.title}_${filename}.png`), png);
@@ -49,7 +49,7 @@ describe(stl2png.name, function () {
         const stlData = await fs.promises.readFile(path.join(__dirname, 'data', filename));
         const metal = await fs.promises.readFile(path.join(__dirname, 'data', 'textures', 'metal.jpg'));
         const png = stl2png(stlData, {
-          materials: [makeLambertMaterial(0.2, makeTexture(metal, false)), makeBasicMaterial(0.7, 0x3097d1)],
+          materials: [makeLambertMaterial(0.2, makeTexture(metal, false)), makeStandardMaterial(0.7, 0x3097d1)],
           edgeMaterials: [makeEdgeMaterial(0.3, 0x287dad)],
         });
         await fs.promises.writeFile(path.join(__dirname, 'data', 'dump', `${this.title}_${filename}.png`), png);
@@ -78,7 +78,7 @@ describe(stl2png.name, function () {
       it(`for '${filename}'`, async () => {
         const stlData = await fs.promises.readFile(path.join(__dirname, 'data', filename));
         const png = stl2png(stlData, {
-          materials: [makeLambertMaterial(0.2), makeBasicMaterial(1, 0x96a7b9), makeNormalMaterial(0.4)],
+          materials: [makeLambertMaterial(0.2), makeStandardMaterial(1, 0x96a7b9), makeNormalMaterial(0.4)],
           edgeMaterials: [makeEdgeMaterial(0.5, 0x242c44)],
         });
         await fs.promises.writeFile(path.join(__dirname, 'data', 'dump', `${this.title}_${filename}.png`), png);
