@@ -23,7 +23,7 @@ describe(stl2png.name, function () {
     describe('default', function () {
       it(`for '${filename}'`, async () => {
         const stlData = await fs.promises.readFile(path.join(__dirname, 'data', filename));
-        const png = await stl2png(stlData);
+        const png = stl2png(stlData);
         await fs.promises.writeFile(path.join(__dirname, 'data', 'dump', `${this.title}_${filename}.png`), png);
         await compareImages(`${this.title}_${filename}`);
       });
@@ -36,7 +36,7 @@ describe(stl2png.name, function () {
         const stlData = await fs.promises.readFile(path.join(__dirname, 'data', filename));
         const material = makeBasicMaterial(0.7, 0x3097d1);
         material.overDraw = 0;
-        const png = await stl2png(stlData, { materials: [material], edgeMaterials: [] });
+        const png = stl2png(stlData, { materials: [material], edgeMaterials: [] });
         await fs.promises.writeFile(path.join(__dirname, 'data', 'dump', `${this.title}_${filename}.png`), png);
         await compareImages(`${this.title}_${filename}`);
       });
@@ -62,7 +62,7 @@ describe(stl2png.name, function () {
     describe('wireframe', function () {
       it(`for '${filename}'`, async () => {
         const stlData = await fs.promises.readFile(path.join(__dirname, 'data', filename));
-        const png = await stl2png(stlData, {
+        const png = stl2png(stlData, {
           lights: [makeAmbientLight(0xffffff), makeDirectionalLight(1, 1, 1, 0xffffff, 1.35), makeDirectionalLight(0.5, 1, -1, 0xffffff, 1)],
           materials: [],
           edgeMaterials: [makeEdgeMaterial(0.7, 0x000000)],
@@ -77,7 +77,7 @@ describe(stl2png.name, function () {
     describe('normals', function () {
       it(`for '${filename}'`, async () => {
         const stlData = await fs.promises.readFile(path.join(__dirname, 'data', filename));
-        const png = await stl2png(stlData, {
+        const png = stl2png(stlData, {
           materials: [makeLambertMaterial(0.2), makeBasicMaterial(1, 0x96a7b9), makeNormalMaterial(0.4)],
           edgeMaterials: [makeEdgeMaterial(0.5, 0x242c44)],
         });
