@@ -15,6 +15,11 @@ run-tests:
     - yarn lint
     - yarn build
     - yarn coverage
+  artifacts:
+    expose_as: 'test-results'
+    paths:
+      - tests/data/dump/
+    expire_in: 3 days
 
 tag:
   stage: tag
