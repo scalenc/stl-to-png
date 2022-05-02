@@ -33,7 +33,7 @@ function getGeometry(stlData: Buffer): THREE.BufferGeometry {
   return geometry;
 }
 
-export async function stl2png(stlData: Buffer, options: Options = {}): Promise<Buffer> {
+export function stl2png(stlData: Buffer, options: Options = {}): Buffer {
   // Prepare the scene, renderer, and camera
   const width = options.width ?? DEFAULTS.width;
   const height = options.height ?? DEFAULTS.height;
@@ -45,7 +45,6 @@ export async function stl2png(stlData: Buffer, options: Options = {}): Promise<B
   // Configure renderer
   renderer.setSize(width, height, false);
   renderer.setClearColor(0xffffff, 1);
-  THREE.Sprite;
 
   // Configure camera with user-set position, then move it in-or-out depending on
   // the size of the model that needs to display
