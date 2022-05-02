@@ -36,7 +36,7 @@ function getGeometry(stlData: Buffer): THREE.BufferGeometry {
   return geometry;
 }
 
-export async function stl2png(stlData: Buffer, options: Options = {}): Promise<Buffer> {
+export function stl2png(stlData: Buffer, options: Options = {}): Buffer {
   // Prepare the scene, renderer, and camera
   const width = options.width ?? DEFAULTS.width;
   const height = options.height ?? DEFAULTS.height;

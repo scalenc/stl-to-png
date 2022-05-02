@@ -48,7 +48,7 @@ describe(stl2png.name, function () {
       it(`for '${filename}'`, async () => {
         const stlData = await fs.promises.readFile(path.join(__dirname, 'data', filename));
         const metal = await fs.promises.readFile(path.join(__dirname, 'data', 'textures', 'metal.jpg'));
-        const png = await stl2png(stlData, {
+        const png = stl2png(stlData, {
           materials: [makeLambertMaterial(0.2, makeTexture(metal, false)), makeBasicMaterial(0.7, 0x3097d1)],
           edgeMaterials: [makeEdgeMaterial(0.3, 0x287dad)],
         });
