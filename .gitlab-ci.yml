@@ -17,6 +17,7 @@ run-tests:
     - yarn coverage
   artifacts:
     expose_as: 'test-results'
+    when: always
     paths:
       - tests/data/dump/
     expire_in: 3 days
