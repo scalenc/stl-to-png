@@ -1,5 +1,4 @@
 // From https://github.com/mrdoob/three.js/blob/1637e9db57fda89b39d4959dc7791124d945e447/examples/jsm/renderers/Projector.js
-import { debug } from 'console';
 import { Box3, Color, DoubleSide, Frustum, Matrix3, Matrix4, Vector2, Vector3, Vector4 } from 'three';
 
 class RenderableObject {
@@ -27,6 +26,8 @@ class RenderableFace {
     this.v3 = new RenderableVertex();
 
     this.normalModel = new Vector3();
+    this.normalWorld = new Vector3();
+    this.normalScreen = new Vector3();
 
     this.vertexNormalsModel = [new Vector3(), new Vector3(), new Vector3()];
     this.vertexNormalsLength = 0;
@@ -294,6 +295,8 @@ class Projector {
           _vector3.cross(_vector4);
           _face.normalModel.copy(_vector3);
           _face.normalModel.applyMatrix3(normalMatrix).normalize();
+          _face.normalWorld.copy(_face.normalModel).applyMatrix4(_modelMatrix);
+          _face.normalScreen.copy(_face.normalWorld).applyMatrix4(_viewProjectionMatrix);
 
           for (let i = 0; i < 3; i++) {
             const normal = _face.vertexNormalsModel[i];
@@ -716,30 +719,7 @@ class Projector {
         return painterSort(a, b);
       }
 
-      let debug = false;
-
-      if (debug) {
-        console.log('======================================');
-        console.log('NEWELL: Comparing', a.debugId, 'with', b.debugId);
-        console.log('render orders', a.renderOrder, b.renderOrder);
-        console.log('z-ranges', `${a.minZ} - ${a.maxZ}`, 'and', `${b.minZ} - ${b.maxZ}`, b.minZ > a.maxZ && b.maxZ < a.minZ ? 'no overlap' : 'overlap');
-        console.log('x-ranges', `${a.minX} - ${a.maxX}`, 'and', `${b.minX} - ${b.maxX}`, b.minX > a.maxX && b.maxX < a.minX ? 'no overlap' : 'overlap');
-        console.log('y-ranges', `${a.minY} - ${a.maxY}`, 'and', `${b.minY} - ${b.maxY}`, b.minY > a.maxY && b.maxY < a.minY ? 'no overlap' : 'overlap');
-        console.log(
-          'distances to plain A',
-          distancePlainToPoint(a.v1.positionWorld, a.normalModel, b.v1.positionWorld),
-          distancePlainToPoint(a.v1.positionWorld, a.normalModel, b.v2.positionWorld),
-          distancePlainToPoint(a.v1.positionWorld, a.normalModel, b.v3.positionWorld)
-        );
-        console.log(
-          'distances to plain B',
-          distancePlainToPoint(b.v1.positionWorld, b.normalModel, a.v1.positionWorld),
-          distancePlainToPoint(b.v1.positionWorld, b.normalModel, a.v2.positionWorld),
-          distancePlainToPoint(b.v1.positionWorld, b.normalModel, a.v3.positionWorld)
-        );
-      }
-
-      debug = true;
+      let debug = true;
 
       if (a.renderOrder !== b.renderOrder) {
         if (debug) console.log('renderOrders are different');
@@ -753,29 +733,43 @@ class Projector {
         if (debug) console.log('b fully behind a');
         return -1;
       }
-      if (b.minX > a.maxX || b.maxX < a.minX || b.minY > a.maxY || b.maxY < a.minY) {
+      if (b.minX >= a.maxX || b.maxX <= a.minX || b.minY >= a.maxY || b.maxY <= a.minY) {
         if (debug) console.log('no bounding box intersection');
-        return -1;
+        return 0; // return painterSort(a, b);
       }
-      const da1 = distancePlainToPoint(a.v1.positionWorld, a.normalModel, b.v1.positionWorld);
-      const da2 = distancePlainToPoint(a.v1.positionWorld, a.normalModel, b.v2.positionWorld);
-      const da3 = distancePlainToPoint(a.v1.positionWorld, a.normalModel, b.v3.positionWorld);
-      if (da1 >= 0 && da2 >= 0 && da3 >= 0 && !(((da1 === da2) === da3) === 0)) {
+      const da1 = distancePlainToPoint(a.v1.positionWorld, a.normalWorld, b.v1.positionWorld);
+      const da2 = distancePlainToPoint(a.v1.positionWorld, a.normalWorld, b.v2.positionWorld);
+      const da3 = distancePlainToPoint(a.v1.positionWorld, a.normalWorld, b.v3.positionWorld);
+      console.log('distances to plain A', da1, da2, da3, a.normalScreen.x, a.normalScreen.y, a.normalScreen.z);
+      // if ((da1 >= 0 ? 1 : 0) + (da2 >= 0 ? 1 : 0) + (da3 >= 0 ? 1 : 0) >= 2) {
+      //   return -1;
+      // }
+
+      if (da1 === 0 && da2 === 0 && da3 === 0) {
+        if (debug) console.log('all vertices of b are on plain A');
+        return 0;
+      }
+      if (da1 >= 0 && da2 >= 0 && da3 >= 0) {
         if (debug) console.log('all vertices of b behind plain A');
         return -1;
       }
-      if (da1 <= 0 && da2 <= 0 && da3 <= 0 && !(((da1 === da2) === da3) === 0)) {
+      if (da1 <= 0 && da2 <= 0 && da3 <= 0) {
         if (debug) console.log('all vertices of b in front of plain A');
         return 1;
       }
-      const db1 = distancePlainToPoint(a.v1.positionWorld, a.normalModel, b.v1.positionWorld);
-      const db2 = distancePlainToPoint(a.v1.positionWorld, a.normalModel, b.v2.positionWorld);
-      const db3 = distancePlainToPoint(a.v1.positionWorld, a.normalModel, b.v3.positionWorld);
-      if (db1 >= 0 && db2 >= 0 && db3 >= 0 && !(((db1 === db2) === db3) === 0)) {
+      const db1 = distancePlainToPoint(b.v1.positionWorld, b.normalWorld, a.v1.positionWorld);
+      const db2 = distancePlainToPoint(b.v1.positionWorld, b.normalWorld, a.v2.positionWorld);
+      const db3 = distancePlainToPoint(b.v1.positionWorld, b.normalWorld, a.v3.positionWorld);
+      console.log('distances to plain B', db1, db2, db3, b.normalScreen.x, b.normalScreen.y, b.normalScreen.z);
+      // if ((db1 >= 0 ? 1 : 0) + (db2 >= 0 ? 1 : 0) + (db3 >= 0 ? 1 : 0) >= 2) {
+      //   return 1;
+      // }
+
+      if (db1 >= 0 && db2 >= 0 && db3 >= 0) {
         if (debug) console.log('all vertices of a behind plain B');
         return 1;
       }
-      if (db1 <= 0 && db2 <= 0 && db3 <= 0 && !(((db1 === db2) === db3) === 0)) {
+      if (db1 <= 0 && db2 <= 0 && db3 <= 0) {
         if (debug) console.log('all vertices of a in front of plain B');
         return -1;
       }
@@ -786,6 +780,9 @@ class Projector {
       }
 
       if (debug) console.log('No criteria found');
+
+      console.log(printFacet(a));
+      console.log(printFacet(b));
       console.log('render orders', a.renderOrder, b.renderOrder);
       console.log('z-ranges', `${a.minZ} - ${a.maxZ}`, 'and', `${b.minZ} - ${b.maxZ}`, b.minZ > a.maxZ && b.maxZ < a.minZ ? 'no overlap' : 'overlap');
       console.log('x-ranges', `${a.minX} - ${a.maxX}`, 'and', `${b.minX} - ${b.maxX}`, b.minX > a.maxX && b.maxX < a.minX ? 'no overlap' : 'overlap');
@@ -851,6 +848,15 @@ class Projector {
       const vy = pointOnPlane.y - point.y;
       const vz = pointOnPlane.z - point.z;
       return vx * plainNormal.x + vy * plainNormal.y + vz * plainNormal.z;
+    }
+    function printFacet(face) {
+      console.log(` facet normal ${face.normalModel.x} ${face.normalModel.y} ${face.normalModel.z}`);
+      console.log(`  outer loop`);
+      console.log(`  vertex ${face.v1.positionWorld.x} ${face.v1.positionWorld.y} ${face.v1.positionWorld.z}`);
+      console.log(`  vertex ${face.v2.positionWorld.x} ${face.v2.positionWorld.y} ${face.v2.positionWorld.z}`);
+      console.log(`  vertex ${face.v3.positionWorld.x} ${face.v3.positionWorld.y} ${face.v3.positionWorld.z}`);
+      console.log(`  endloop`);
+      console.log(` endfacet`);
     }
   }
 }

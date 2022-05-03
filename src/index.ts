@@ -94,7 +94,7 @@ export function makeLambertMaterial(opacity: number, envMap: THREE.Texture | nul
     new THREE.MeshLambertMaterial({
       envMap: envMap,
       transparent: true,
-      side: THREE.DoubleSide,
+      //      side: THREE.DoubleSide,
       opacity: opacity,
     }),
     0
@@ -109,7 +109,7 @@ export function makeCanvasMaterial<T extends THREE.Material>(material: T, overDr
 export function makeStandardMaterial(opacity: number, color: number): THREE.MeshStandardMaterial & { overDraw?: number } {
   return makeCanvasMaterial(
     new THREE.MeshStandardMaterial({
-      side: THREE.DoubleSide,
+      //      side: THREE.DoubleSide,
       transparent: true,
       opacity: opacity,
       color: color,
@@ -121,7 +121,7 @@ export function makeStandardMaterial(opacity: number, color: number): THREE.Mesh
 export function makeNormalMaterial(opacity: number): THREE.MeshNormalMaterial & { overDraw?: number } {
   return makeCanvasMaterial(
     new THREE.MeshNormalMaterial({
-      side: THREE.DoubleSide,
+      //      side: THREE.DoubleSide,
       transparent: true,
       opacity: opacity,
     }),
