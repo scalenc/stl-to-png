@@ -55,14 +55,17 @@ export function stl2png(stlData: Buffer, options: Options = {}): Buffer {
   camera.position.x = options.cameraPosition?.[0] ?? DEFAULTS.cameraPosition[0];
   camera.position.y = options.cameraPosition?.[1] ?? DEFAULTS.cameraPosition[1];
   camera.position.z = options.cameraPosition?.[2] ?? DEFAULTS.cameraPosition[2];
-  camera.lookAt(new THREE.Vector3(0, 0, 0));
+  camera.lookAt(geometry.boundingSphere.center);
 
   // (re)Position the camera
   // See http://stackoverflow.com/questions/14614252/how-to-fit-camera-to-object
   const fov = camera.fov * (Math.PI / 180);
   const distance = Math.abs(geometry.boundingSphere.radius / Math.sin(fov / 2));
-  const newPosition = camera.position.clone().normalize().multiplyScalar(distance);
+  const newPosition = camera.position.clone().normalize().multiplyScalar(distance).add(geometry.boundingSphere.center);
   camera.position.set(newPosition.x, newPosition.y, newPosition.z);
+  const distanceToCenter = camera.position.clone().sub(geometry.boundingSphere.center).length();
+  camera.far = distanceToCenter + geometry.boundingSphere.radius * 1.1;
+  camera.near = distanceToCenter - geometry.boundingSphere.radius * 1.1;
   camera.updateProjectionMatrix();
 
   (options.lights ?? DEFAULTS.lights).forEach((light) => scene.add(light as THREE.Light));
