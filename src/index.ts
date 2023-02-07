@@ -81,12 +81,14 @@ export function stl2png(stlData: Buffer, options: Options = {}): Buffer {
   return renderer.domElement.toBuffer();
 }
 
-export function makeTexture(imageData: string | Buffer, hasAlpha: boolean, mapping?: ThreeMapping): ThreeTexture {
+// FIXME: remove _hasAlpha argument in next breaking release
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+export function makeTexture(imageData: string | Buffer, _hasAlpha = true, mapping?: ThreeMapping): ThreeTexture {
   const img = new Canvas.Image();
   img.src = imageData;
 
   const texture = new THREE.Texture();
-  texture.format = hasAlpha ? THREE.RGBFormat : THREE.RGBAFormat;
+  texture.format = THREE.RGBAFormat;
   texture.image = img;
   texture.needsUpdate = true;
   switch (mapping) {

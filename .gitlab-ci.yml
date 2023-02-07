@@ -1,5 +1,5 @@
 default:
-  image: node:14
+  image: node:18
 
 stages:
   - test
@@ -15,6 +15,7 @@ run-tests:
     - yarn lint
     - yarn build
     - yarn coverage
+  coverage: /All files[^|]*\|[^|]*\s+([\d\.]+)/
   artifacts:
     expose_as: 'test-results'
     when: always
@@ -27,7 +28,7 @@ tag:
   only:
     - master
   script:
-    - npx semantic-release --repository-url `git remote get-url origin`
+    - npx semantic-release@19 --repository-url `git remote get-url origin`
 
 deploy-to-npm:
   stage: deploy
