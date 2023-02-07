@@ -39,7 +39,7 @@ import path from 'path';
 const stlData = fs.readFileSync(path.join(__dirname, 'input.stl'));
 const metal = fs.readFileSync(path.join(__dirname, 'metal.jpg'));
 const pngData = stl2png(stlData, {
-  materials: [makeLambertMaterial(0.2, makeTexture(metal, false)), makeStandardMaterial(0.7, 0x3097d1)],
+  materials: [makeLambertMaterial(0.2, makeTexture(metal)), makeStandardMaterial(0.7, 0x3097d1)],
   edgeMaterials: [makeEdgeMaterial(0.1, 0x287dad)],
 });
 fs.writeFileSync(path.join(__dirname, `output.png`), pngData);
