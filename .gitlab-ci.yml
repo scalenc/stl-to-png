@@ -1,5 +1,5 @@
 default:
-  image: node:14
+  image: node:18
 
 stages:
   - test
@@ -15,6 +15,7 @@ run-tests:
     - yarn lint
     - yarn build
     - yarn coverage
+  coverage: /All files[^|]*\|[^|]*\s+([\d\.]+)/
   artifacts:
     expose_as: 'test-results'
     when: always
