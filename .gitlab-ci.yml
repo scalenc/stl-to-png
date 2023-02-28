@@ -28,7 +28,7 @@ tag:
   only:
     - master
   script:
-    - npx semantic-release@19 --repository-url `git remote get-url origin`
+    - npx semantic-release@20 --repository-url `git remote get-url origin`
 
 deploy-to-npm:
   stage: deploy

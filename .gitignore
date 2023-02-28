@@ -20,3 +20,4 @@ out-logger.json
 dist
 
 *.log
+/.idea/
