@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import Canvas from 'canvas';
+import Canvas from '@napi-rs/canvas';
 
 import { CanvasRenderer } from './threejs-extras/CanvasRenderer';
 import { STLLoader } from './threejs-extras/STLLoader';
@@ -78,12 +78,12 @@ export function stl2png(stlData: Buffer, options: Options = {}): Buffer {
   }
 
   renderer.render(scene, camera);
-  return renderer.domElement.toBuffer();
+  return renderer.domElement.toBuffer('image/png');
 }
 
 // FIXME: remove _hasAlpha argument in next breaking release
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-export function makeTexture(imageData: string | Buffer, _hasAlpha = true, mapping?: ThreeMapping): ThreeTexture {
+export function makeTexture(imageData: Buffer, _hasAlpha = true, mapping?: ThreeMapping): ThreeTexture {
   const img = new Canvas.Image();
   img.src = imageData;
 
