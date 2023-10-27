@@ -43,7 +43,7 @@
   },
   "homepage": "https://github.com/scalenc/stl-to-png",
   "dependencies": {
-    "canvas": "^2.11.0",
+    "@napi-rs/canvas": "^0.1.44",
     "three": "^0.149.0"
   },
   "devDependencies": {
