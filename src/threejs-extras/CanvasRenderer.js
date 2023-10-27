@@ -746,8 +746,6 @@ export function CanvasRenderer(parameters) {
       return;
     }
 
-    // http://extremelysatisfactorytotalitarianism.com/blog/?p=2120
-
     var a,
       b,
       c,
@@ -803,9 +801,7 @@ export function CanvasRenderer(parameters) {
   /*
 	function clipImage( x0, y0, x1, y1, x2, y2, u0, v0, u1, v1, u2, v2, image ) {
 
-		// http://extremelysatisfactorytotalitarianism.com/blog/?p=2120
-
-		var a, b, c, d, e, f, det, idet,
+    var a, b, c, d, e, f, det, idet,
 		width = image.width - 1,
 		height = image.height - 1;
 
