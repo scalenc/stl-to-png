@@ -1,5 +1,7 @@
 default:
   image: node:18
+  before_script:
+    - corepack enable
 
 stages:
   - test
@@ -40,7 +42,7 @@ deploy-to-npm:
     - 'sed -ie "s/\"version\":[ ]*\"[^\"]*\"/\"version\": \"`git describe --tags | tr -d v`\"/g" package.json'
     - 'sed -i "/^[ ]*\"prepare\": \".*\",$/d" package.json'
     - yarn
-    - yarn publish --access public
+    - yarn npm publish --access public
 
 deploy-to-gitlab:
   stage: deploy
@@ -48,12 +50,15 @@ deploy-to-gitlab:
     - tags
   before_script:
     - |
-      {
-        echo "@${CI_PROJECT_ROOT_NAMESPACE}:registry=${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/npm/"
-        echo "${CI_API_V4_URL#https?}/projects/${CI_PROJECT_ID}/packages/npm/:_authToken=\${CI_JOB_TOKEN}"
-      } | tee --append .npmrc
+      echo "
+      npmScopes:
+        ${CI_PROJECT_ROOT_NAMESPACE}:
+          npmRegistryServer: \"https://gitlab.com/api/v4/projects/${CI_PROJECT_ID}/packages/npm/\"
+          npmPublishRegistry: \"https://gitlab.com/api/v4/projects/${CI_PROJECT_ID}/packages/npm/\"
+          npmAlwaysAuth: true
+          npmAuthToken: \"${CI_JOB_TOKEN}\"" >> .yarnrc.yml
   script:
     - 'sed -ie "s/\"version\":[ ]*\"[^\"]*\"/\"version\": \"`git describe --tags | tr -d v`\"/g" package.json'
     - 'sed -i "/^[ ]*\"prepare\": \".*\",$/d" package.json'
     - yarn
-    - yarn publish
+    - yarn npm publish
