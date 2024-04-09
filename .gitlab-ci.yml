@@ -38,6 +38,11 @@ deploy-to-npm:
     - tags
   before_script:
     - echo "//registry.npmjs.org/:_authToken=${NPM_TOKEN}" > .npmrc
+    - |
+        echo "
+      npmPublishRegistry: \"https://registry.npmjs.org/\"
+      npmAlwaysAuth: true
+      npmAuthToken: \"${NPM_TOKEN}\"" >> .yarnrc.yml
   script:
     - 'sed -ie "s/\"version\":[ ]*\"[^\"]*\"/\"version\": \"`git describe --tags | tr -d v`\"/g" package.json'
     - 'sed -i "/^[ ]*\"prepare\": \".*\",$/d" package.json'
