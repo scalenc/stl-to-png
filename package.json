@@ -93,5 +93,6 @@
     "*.{js,jsx,ts,tsx,json,md}": [
       "./node_modules/.bin/prettier --list-different"
     ]
-  }
+  },
+  "packageManager": "yarn@4.1.1"
 }

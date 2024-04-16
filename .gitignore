@@ -21,3 +21,12 @@ dist
 
 *.log
 /.idea/
+
+# yarn 4
+.yarn/*
+!.yarn/cache
+!.yarn/patches
+!.yarn/plugins
+!.yarn/releases
+!.yarn/sdks
+!.yarn/versions
