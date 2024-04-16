@@ -37,6 +37,7 @@ deploy-to-npm:
   only:
     - tags
   before_script:
+    - corepack enable
     - |
       echo "
       npmPublishRegistry: \"https://registry.npmjs.org/\"
@@ -53,6 +54,7 @@ deploy-to-gitlab:
   only:
     - tags
   before_script:
+    - corepack enable
     - |
       echo "
       npmScopes:
