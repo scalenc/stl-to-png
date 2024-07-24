@@ -49,7 +49,6 @@ deploy-to-npm:
     - yarn
     - yarn npm publish --access public
     - ./scripts/createAndPublishSBOM.sh
-    - ./scripts/createAndPublishSBOM.sh
 
 deploy-to-gitlab:
   stage: deploy
